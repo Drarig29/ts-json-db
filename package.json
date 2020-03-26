@@ -4,12 +4,20 @@
   "description": "A Node.js database using JSON file as storage. The result of requests are typed!",
   "main": "dist/TypedJsonDB.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc && mocha"
   },
   "author": "Corentin Girard",
   "license": "MIT",
   "dependencies": {
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^12.12.31",
     "node-json-db": "^1.0.3",
     "typescript": "^3.8.3"
+  },
+  "devDependencies": {
+    "mocha": "^7.1.1"
+  },
+  "mocha": {
+    "spec": "dist/test/*.spec.js"
   }
 }
