@@ -1,17 +1,13 @@
 import { JsonDB } from "node-json-db";
 
-interface RestypedBase {
+interface ContentBase {
     [route: string]: any
-}
-
-interface RestypedRoute {
-    data: any
 }
 
 /**
  * Typed wrapper around the JsonDB.
  */
-export default class TypedJsonDB<APIDef extends RestypedBase> {
+export default class TypedJsonDB<ContentDef extends ContentBase> {
 
     /**
      * The encapsulated actual JSON database.
@@ -25,7 +21,7 @@ export default class TypedJsonDB<APIDef extends RestypedBase> {
         this.internalDB = new JsonDB(filename, saveOnPush, humanReadable, separator);
     }
 
-    get<Path extends keyof APIDef>(path: Path): APIDef[Path]['data'] {
+    get<Path extends keyof ContentDef>(path: Path): ContentDef[Path]['data'] {
         return null;
     }
 }
