@@ -1,0 +1,14 @@
+{
+  "name": "ts-json-db",
+  "version": "1.0.0",
+  "description": "A Node.js database using JSON file as storage. The result of requests are typed!",
+  "main": "dist/TypedJsonDB.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Corentin Girard",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^3.8.3"
+  }
+}
