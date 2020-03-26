@@ -1,3 +1,5 @@
+import { ContentBase } from "../src/TypedJsonDB";
+
 export interface Restaurant {
     name: string
     chef: string,
@@ -5,11 +7,14 @@ export interface Restaurant {
     turnOver: number
 }
 
-export interface DbContent {
-    '/login': {
-        username: string,
-        password: string
+export interface DbContent extends ContentBase {
+    singles: {
+        '/login': {
+            username: string,
+            password: string
+        }
+    },
+    arrays: {
+        '/restaurants': Restaurant[]
     }
-
-    '/restaurants': Restaurant[]
 }
