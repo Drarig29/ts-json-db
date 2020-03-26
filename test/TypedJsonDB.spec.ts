@@ -21,6 +21,19 @@ describe("TypedJsonDB tests", () => {
         let data = { username: "foo", password: "bar" };
         db.push("/login", data);
         let result = db.get("/login");
-        assert(typeof data === typeof result);
+        assert(typeof result === typeof data);
     })
+
+    it("should push an array", () => {
+        let db = new TypedJsonDB<DbContent>("config.json");
+        let restaurant: Restaurant = {
+            chef: "foo",
+            memberCount: 5,
+            name: "bar",
+            turnOver: 10000
+        }
+        db.push("/restaurants", [restaurant]);
+        let result = db.get("/restaurants")[0];
+        assert(result === restaurant);
+    });
 });
