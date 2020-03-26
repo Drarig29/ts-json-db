@@ -9,6 +9,7 @@
   "author": "Corentin Girard",
   "license": "MIT",
   "dependencies": {
+    "node-json-db": "^1.0.3",
     "typescript": "^3.8.3"
   }
 }
