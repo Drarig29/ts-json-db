@@ -7,13 +7,9 @@ export interface Restaurant {
 
 export interface DbContent {
     '/login': {
-        data: {
-            username: string,
-            password: string
-        }
+        username: string,
+        password: string
     }
 
-    '/restaurants': {
-        data: Restaurant[]
-    }
+    '/restaurants': Restaurant[]
 }
