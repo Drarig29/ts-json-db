@@ -9,33 +9,24 @@ describe("TypedJsonDB tests", () => {
         assert(db);
     });
 
-    it("should push the given data", () => {
+    it("should set a single object", () => {
         let db = new TypedJsonDB<DbContent>("config.json");
         let data = { username: "foo", password: "bar" };
-        db.push("/login", data);
+        db.set("/login", data);
         assert(db.internalDB.getData("/login") === data);
     });
 
-    // it("should be the same type", () => {
-    //     let db = new TypedJsonDB<DbContent>("config.json");
-    //     let data = { username: "foo", password: "bar" };
-    //     db.push("/login", data);
-    //     let result = db.get("/login");
-    //     assert(typeof result === typeof data);
-    // })
+    it("should set an array", () => {
+        let db = new TypedJsonDB<DbContent>("config.json");
+        let restaurant: Restaurant = { chef: "foo", name: "bar", memberCount: 10, turnOver: 10000 }
+        db.setArray("/restaurants", [restaurant]);
+        assert(db.internalDB.getData("/restaurants")[0] === restaurant);
+    });
 
-    // it("should push an array", () => {
-    //     let db = new TypedJsonDB<DbContent>("config.json");
-    //     let restaurant: Restaurant = {
-    //         chef: "foo",
-    //         memberCount: 5,
-    //         name: "bar",
-    //         turnOver: 10000
-    //     }
-    //     db.push("/restaurants", restaurant);
-    //     let result = db.get("/restaurants")[0];
-    //     assert(result === restaurant);
-    // });
-
-    // it("should push an object in an array", () => { });
+    it("should set a dictionary", () => {
+        let db = new TypedJsonDB<DbContent>("config.json");
+        let data = { test1: "foo", test2: "bar" };
+        db.setDictionary("/teams", data);
+        assert(db.internalDB.getData("/teams")["test1"] === data.test1);
+    });
 });

@@ -15,6 +15,9 @@ export interface DbContent extends ContentBase {
         }
     },
     arrays: {
-        '/restaurants': Restaurant[]
+        '/restaurants': Restaurant
+    },
+    dictionaries: {
+        '/teams': string
     }
 }

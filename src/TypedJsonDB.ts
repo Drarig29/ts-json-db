@@ -1,6 +1,7 @@
 import { JsonDB } from "node-json-db";
 
 type EntryType = "singles" | "arrays" | "dictionaries";
+type Dictionary<V> = { [key: string]: V };
 
 export type ContentBase = {
     [path in EntryType]: any;
@@ -31,7 +32,15 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
         this.internalDB = new JsonDB(filename, saveOnPush, humanReadable, separator);
     }
 
-    push<Path extends keyof ContentDef>(path: Path, data: ContentDef[Path]["baseType"], override?: boolean): void {
-        this.internalDB.push(path.toString(), data, override);
+    set<Path extends keyof ContentDef["singles"]>(path: Path, data: ContentDef["singles"][Path]) {
+        this.internalDB.push(path.toString(), data);
+    }
+
+    setArray<Path extends keyof ContentDef["arrays"]>(path: Path, data: ContentDef["arrays"][Path][]) {
+        this.internalDB.push(path.toString(), data);
+    }
+
+    setDictionary<Path extends keyof ContentDef["dictionaries"]>(path: Path, data: Dictionary<ContentDef["dictionaries"][Path]>) {
+        this.internalDB.push(path.toString(), data);
     }
 }
