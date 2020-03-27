@@ -5,6 +5,7 @@
     "author": "Corentin Girard <corentingirard.dev@gmail.com>",
     "license": "MIT",
     "scripts": {
+        "prepublish": "tsc",
         "build": "tsc",
         "test": "tsc -p tsconfig.mocha.json && mocha"
     },
