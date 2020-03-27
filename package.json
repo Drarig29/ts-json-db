@@ -4,6 +4,13 @@
     "description": "A Node.js database using JSON file as storage. The result of requests are typed!",
     "main": "dist/src/index.js",
     "types": "dist/src/",
+    "keywords": [
+        "node",
+        "database",
+        "json",
+        "typescript",
+        "typed"
+    ],
     "scripts": {
         "build": "tsc",
         "test": "tsc -p tsconfig.mocha.json && mocha"
