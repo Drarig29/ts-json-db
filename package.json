@@ -5,7 +5,7 @@
   "main": "dist/src/index.js",
   "types": "dist/src/",
   "scripts": {
-    "test": "tsc && mocha"
+    "test": "tsc -t es2019 && mocha"
   },
   "author": "Corentin Girard",
   "license": "MIT",

@@ -1,1 +1,1 @@
-{"login":{"username":"foo","password":"bar"},"teams":{"test1":"coucou","test2":"coucou"}}
+{"login":{"username":"foo","password":"bar"},"teams":{"test1":"foo","test2":"bar","key":"value"},"restaurants":[{"chef":"eheh","name":"hello","memberCount":8,"turnOver":2000}]}
