@@ -8,33 +8,27 @@ export interface Restaurant {
 }
 
 export const contentInstance: ContentInstance = {
-    '/login': "singles",
-    '/restaurants': "arrays",
-    '/teams': "dictionaries"
+    '/login': "single",
+    '/restaurants': "array",
+    '/teams': "dictionary"
 };
 
 export interface ContentDef extends ContentBase {
-    singles: {
-        '/login': {
-            parentEntryType: "singles",
-            dataType: {
-                username: string,
-                password: string
-            }
+    '/login': {
+        entryType: "single",
+        dataType: {
+            username: string,
+            password: string
         }
     },
-    arrays: {
-        '/restaurants': {
-            parentEntryType: "arrays",
-            baseType: Restaurant,
-            dataType: Restaurant[]
-        }
+    '/restaurants': {
+        entryType: "array",
+        baseType: Restaurant,
+        dataType: Restaurant[]
     },
-    dictionaries: {
-        '/teams': {
-            parentEntryType: "dictionaries",
-            baseType: string,
-            dataType: Dictionary<string>
-        }
+    '/teams': {
+        entryType: "dictionary",
+        baseType: string,
+        dataType: Dictionary<string>
     }
 }

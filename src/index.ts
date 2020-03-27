@@ -4,7 +4,7 @@ import { DataError } from "node-json-db/dist/lib/Errors";
 /**
  * The possible entry types for the json database.
  */
-type EntryType = "singles" | "arrays" | "dictionaries";
+type EntryType = "single" | "array" | "dictionary";
 
 /**
  * Creates a dictionary (JS object) which maps a string to the given type.
@@ -12,40 +12,24 @@ type EntryType = "singles" | "arrays" | "dictionaries";
 export type Dictionary<V> = { [key: string]: V };
 
 /**
- * Gets all the keys from a union of objects.
- * @see https://stackoverflow.com/a/52221718/3970387
+ * Get the key of an object as a string.
  */
-type AllUnionKeys<T> = T extends any ? keyof T : never;
-
-type ObjKeyOf<T> = T extends object ? keyof T : never
-type KeyOfKeyOf<T> = ObjKeyOf<T> | { [K in keyof T]: ObjKeyOf<T[K]> }[keyof T]
-type StripNever<T> = Pick<T, { [K in keyof T]: [T[K]] extends [never] ? never : K }[keyof T]>;
-type Lookup<T, K> = T extends any ? K extends keyof T ? T[K] : never : never
-
 type GetKey<T> = Extract<keyof T, string>;
-
-/**
- * Flattens all the second levels into the first level of an object.
- * @see https://github.com/Microsoft/TypeScript/issues/31192#issuecomment-488391189
- */
-type Flatten<T> = T extends object ? StripNever<{ [K in KeyOfKeyOf<T>]:
-    Exclude<K extends keyof T ? T[K] : never, object> |
-    { [P in keyof T]: Lookup<T[P], K> }[keyof T]
-}> : T
 
 /**
  * The base structure of the json database.
  */
 export type ContentBase = {
-    [entry in EntryType]: {
-        [path: string]: {
-            parentEntryType: entry,
-            baseType?: any,
-            dataType: any
-        }
-    };
+    [path: string]: {
+        entryType: EntryType,
+        baseType?: any,
+        dataType: any
+    }
 };
 
+/**
+ * Used for runtime "type checking". Didn't find another solution.
+ */
 export interface ContentInstance {
     [path: string]: EntryType
 }
@@ -97,28 +81,26 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     /**
      * Push initial data when it doesn't exist.
      *
-     * @template Flattened The flattened ContentDef, to get the dataType.
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
      * @param {*} initialValue The initial value to set.
      * @memberof TypedJsonDB
      */
-    pushIfNotExists<Flattened extends Flatten<ContentDef>, Path extends GetKey<Flattened>>(path: Path, initialValue: Flattened[Path]["dataType"]): void {
-        if (!this.internalDB.exists(path.toString())) {
-            this.internalDB.push(path.toString(), initialValue);
+    pushIfNotExists<Path extends GetKey<ContentDef>>(path: Path, initialValue: ContentDef[Path]["dataType"]): void {
+        if (!this.internalDB.exists(path)) {
+            this.internalDB.push(path, initialValue);
         }
     }
 
     /**
      * Gets the full data at a given path (not a given value of an array or a dictionary).
      *
-     * @template Flattened The flattened ContentDef, to get the dataType.
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @returns {Flattened[Path]["dataType"]} The wanted value, typed.
+     * @returns {ContentDef[Path]["dataType"]} The wanted value, typed.
      * @memberof TypedJsonDB
      */
-    get<Flattened extends Flatten<ContentDef>, Path extends GetKey<Flattened>>(path: Path): Flattened[Path]["dataType"] {
+    get<Path extends GetKey<ContentDef>>(path: Path): ContentDef[Path]["dataType"] {
         return this.secureGet(path);
     }
 
@@ -140,26 +122,25 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     /**
      * Gets a given value of an array or a dictionary. By default, gets the last element of an array.
      *
-     * @template Flattened The flattened ContentDef, to get the dataType.
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
      * @param {(string | number)} key The key where to find the data (optional for arrays, mandatory for dictionaries).
-     * @returns {Flattened[Path]["baseType"]} The wanted value, typed.
+     * @returns {ContentDef[Path]["baseType"]} The wanted value, typed.
      * @memberof TypedJsonDB
      */
-    getAt<Flattened extends Flatten<ContentDef>, Path extends GetKey<Flattened>>(path: Path, key?: string | number): Flattened[Path]["baseType"] {
+    getAt<Path extends GetKey<ContentDef>>(path: Path, key?: string | number): ContentDef[Path]["baseType"] {
         switch (this.instance[path]) {
-            case "singles":
+            case "single":
                 throw new DataError("Please use the get() method. You can't get a single object at a given key.", 97);
-            case "arrays":
+            case "array":
                 if (key) {
                     return this.secureGet(`${path}[${key}]`);
                 } else {
                     return this.secureGet(`${path}[-1]`); // Get the last object by default.
                 }
-            case "dictionaries":
+            case "dictionary":
                 this.ensureSimpleKey(key?.toString());
-                return this.secureGet(`${path.toString()}/${key}`);
+                return this.secureGet(`${path}/${key}`);
         }
     }
 
@@ -171,8 +152,8 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @returns {boolean} Whether data exists.
      * @memberof TypedJsonDB
      */
-    exists<Path extends AllUnionKeys<ContentDef["singles"] | ContentDef["arrays"] | ContentDef["dictionaries"]>>(path: Path): boolean {
-        return this.internalDB.exists(path.toString());
+    exists<Path extends GetKey<ContentDef>>(path: Path): boolean {
+        return this.internalDB.exists(path);
     }
 
     /**
@@ -180,8 +161,8 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param rootPath Base dataPath from where to start searching
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
-    filter<T, Path extends AllUnionKeys<ContentDef["singles"] | ContentDef["arrays"] | ContentDef["dictionaries"]>>(rootPath: Path, callback: FindCallback): T[] | undefined {
-        return this.internalDB.filter<T>(rootPath.toString(), callback);
+    filter<T, Path extends GetKey<ContentDef>>(rootPath: Path, callback: FindCallback): T[] | undefined {
+        return this.internalDB.filter<T>(rootPath, callback);
     }
 
     /**
@@ -189,8 +170,8 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param rootPath Base dataPath from where to start searching
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
-    find<T, Path extends AllUnionKeys<ContentDef["singles"] | ContentDef["arrays"] | ContentDef["dictionaries"]>>(rootPath: Path, callback: FindCallback): T | undefined {
-        return this.internalDB.find<T>(rootPath.toString(), callback);
+    find<T, Path extends GetKey<ContentDef>>(rootPath: Path, callback: FindCallback): T | undefined {
+        return this.internalDB.find<T>(rootPath, callback);
     }
 
     /**
@@ -200,50 +181,47 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param {Path} path The user specified path to data.
      * @memberof TypedJsonDB
      */
-    delete<Path extends AllUnionKeys<ContentDef["singles"] | ContentDef["arrays"] | ContentDef["dictionaries"]>>(path: Path) {
-        this.internalDB.delete(path.toString());
+    delete<Path extends GetKey<ContentDef>>(path: Path) {
+        this.internalDB.delete(path);
     }
 
     /**
      * Sets data at the given path.
      *
-     * @template Flattened The flattened ContentDef, to get the dataType.
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @param {Flattened[Path]["dataType"]} data Some data to set.
+     * @param {ContentDef[Path]["dataType"]} data Some data to set.
      * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
      * @memberof TypedJsonDB
      */
-    set<Flattened extends Flatten<ContentDef>, Path extends GetKey<Flattened>>(path: Path, data: Flattened[Path]["dataType"], overwrite?: boolean) {
+    set<Path extends GetKey<ContentDef>>(path: Path, data: ContentDef[Path]["dataType"], overwrite?: boolean) {
         this.internalDB.push(path, data, overwrite);
     }
 
     /**
      * 
      *
-     * @template Flattened The flattened ContentDef, to get the dataType.
      * @template Path A path from any entry type (same behavior as set() for single objects).
      * @param {Path} path The user specified path to data.
-     * @param {Flattened[Path]["baseType"]} data Some data to add to an array or a dictionary.
      * @param {(string | number)} key The key where to push the data (optional for single objects and arrays, mandatory for dictionaries).
      * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
      * @memberof TypedJsonDB
      */
-    push<Flattened extends Flatten<ContentDef>, Path extends GetKey<Flattened>>(path: Path, data: Flattened[Path]["baseType"], key?: string | number, overwrite?: boolean) {
+    push<Path extends GetKey<ContentDef>>(path: Path, data: ContentDef[Path]["baseType"], key?: string | number, overwrite?: boolean) {
         switch (this.instance[path]) {
-            case "singles":
+            case "single":
                 this.internalDB.push(path, data, overwrite);
                 break;
-            case "arrays":
+            case "array":
                 if (key) {
                     this.internalDB.push(`${path}[${key}]`, data, overwrite);
                 } else {
                     this.internalDB.push(`${path}[]`, data, overwrite);
                 }
                 break;
-            case "dictionaries":
+            case "dictionary":
                 this.ensureSimpleKey(key?.toString());
-                this.internalDB.push(`${path.toString()}/${key}`, data, overwrite);
+                this.internalDB.push(`${path}/${key}`, data, overwrite);
                 break;
         }
     }
