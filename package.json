@@ -2,8 +2,19 @@
     "name": "ts-json-db",
     "version": "1.2.1",
     "description": "A Node.js database using JSON file as storage. The result of requests are typed!",
+    "author": "Corentin Girard <corentingirard.dev@gmail.com>",
+    "license": "MIT",
+    "scripts": {
+        "build": "tsc",
+        "test": "tsc -p tsconfig.mocha.json && mocha"
+    },
     "main": "dist/src/index.js",
     "types": "dist/src/",
+    "files": [
+        "dist/",
+        "README.md",
+        "LICENSE"
+    ],
     "keywords": [
         "node",
         "database",
@@ -11,20 +22,19 @@
         "typescript",
         "typed"
     ],
-    "scripts": {
-        "build": "tsc",
-        "test": "tsc -p tsconfig.mocha.json && mocha"
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Drarig29/ts-json-db.git"
     },
-    "author": "Corentin Girard",
-    "license": "MIT",
+    "homepage": "https://github.com/Drarig29/ts-json-db",
     "dependencies": {
-        "@types/mocha": "^7.0.2",
-        "@types/node": "^12.12.31",
-        "node-json-db": "^1.0.3",
-        "typescript": "^3.8.3"
+        "node-json-db": "^1.0.3"
     },
     "devDependencies": {
-        "mocha": "^7.1.1"
+        "typescript": "^3.8.3",
+        "mocha": "^7.1.1",
+        "@types/node": "^12.12.31",
+        "@types/mocha": "^7.0.2"
     },
     "mocha": {
         "spec": "dist/test/*.spec.js"
