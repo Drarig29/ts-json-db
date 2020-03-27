@@ -12,7 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/dist/src/TypedJsonDB.js",
-            "preLaunchTask": "tsc: build - tsconfig.json",
+            "preLaunchTask": "${defaultBuildTask}",
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
             ]
@@ -21,7 +21,7 @@
             "type": "node",
             "request": "launch",
             "name": "Mocha All",
-            "preLaunchTask": "tsc: build - tsconfig.json",
+            "preLaunchTask": "${defaultBuildTask}",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
                 "--timeout",
