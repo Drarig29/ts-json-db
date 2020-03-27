@@ -1,4 +1,4 @@
-import TypedJsonDB from "../src/TypedJsonDB";
+import TypedJsonDB from "../src";
 import { DbContent, Restaurant } from "./databaseContent";
 
 var assert = require("assert");

@@ -2,7 +2,8 @@
   "name": "ts-json-db",
   "version": "1.0.0",
   "description": "A Node.js database using JSON file as storage. The result of requests are typed!",
-  "main": "dist/TypedJsonDB.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/",
   "scripts": {
     "test": "tsc && mocha"
   },

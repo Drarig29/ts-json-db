@@ -1,4 +1,4 @@
-import { ContentBase } from "../src/TypedJsonDB";
+import { ContentBase } from "../src";
 
 export interface Restaurant {
     name: string
