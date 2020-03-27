@@ -4,7 +4,7 @@ import { DataError } from "node-json-db/dist/lib/Errors";
 /**
  * The possible entry types for the json database.
  */
-type EntryType = "single" | "array" | "dictionary";
+export type EntryType = "single" | "array" | "dictionary";
 
 /**
  * Creates a dictionary (JS object) which maps a string to the given type.
@@ -14,7 +14,7 @@ export type Dictionary<V> = { [key: string]: V };
 /**
  * Get the key of an object as a string.
  */
-type GetKey<T> = Extract<keyof T, string>;
+export type GetKey<T> = Extract<keyof T, string>;
 
 /**
  * The base structure of the json database.
@@ -46,19 +46,20 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedDatabase
      */
     internalDB: JsonDB;
-    instance: ContentInstance;
+    contentInstance: ContentInstance;
 
     /**
      * Creates an instance of TypedJsonDB.
      * @param {string} filename Where to save the database.
+     * @param {ContentInstance} contentInstance
      * @param {boolean} [saveOnPush] Save the database at each push command into the json file.
      * @param {boolean} [humanReadable] The json file will be easily readable by a human.
      * @param {string} [separator] What to use as a separator.
      * @memberof TypedJsonDB
      */
-    constructor(filename: string, instance: ContentInstance, saveOnPush?: boolean, humanReadable?: boolean, separator?: string) {
+    constructor(filename: string, contentInstance: ContentInstance, saveOnPush?: boolean, humanReadable?: boolean, separator?: string) {
         this.internalDB = new JsonDB(filename, saveOnPush, humanReadable, separator);
-        this.instance = instance;
+        this.contentInstance = contentInstance;
     }
 
     /**
@@ -129,7 +130,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     getAt<Path extends GetKey<ContentDef>>(path: Path, key?: string | number): ContentDef[Path]["baseType"] {
-        switch (this.instance[path]) {
+        switch (this.contentInstance[path]) {
             case "single":
                 throw new DataError("Please use the get() method. You can't get a single object at a given key.", 97);
             case "array":
@@ -208,7 +209,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     push<Path extends GetKey<ContentDef>>(path: Path, data: ContentDef[Path]["baseType"], key?: string | number, overwrite?: boolean) {
-        switch (this.instance[path]) {
+        switch (this.contentInstance[path]) {
             case "single":
                 this.internalDB.push(path, data, overwrite);
                 break;
