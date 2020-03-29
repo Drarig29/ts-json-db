@@ -14,7 +14,7 @@ export const contentInstance: ContentInstance = {
 };
 
 export interface ContentDef extends ContentBase {
-    "paths": {
+    paths: {
         '/login': {
             entryType: "single",
             dataType: {

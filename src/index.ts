@@ -4,7 +4,12 @@ import { DataError } from "node-json-db/dist/lib/Errors";
 /**
  * The possible entry types for the json database.
  */
-export type EntryType = "single" | "array" | "dictionary";
+type EntryType = "single" | "array" | "dictionary";
+
+/**
+ * Get the key of an object as a string.
+ */
+type GetKey<T> = Extract<keyof T, string>;
 
 /**
  * Creates a dictionary (JS object) which maps a string to the given type.
@@ -12,15 +17,10 @@ export type EntryType = "single" | "array" | "dictionary";
 export type Dictionary<V> = { [key: string]: V };
 
 /**
- * Get the key of an object as a string.
- */
-export type GetKey<T> = Extract<keyof T, string>;
-
-/**
  * The base structure of the json database.
  */
 export type ContentBase = {
-    paths: {
+    [root in "paths"]: {
         [path: string]: {
             entryType: EntryType,
             baseType?: any,
