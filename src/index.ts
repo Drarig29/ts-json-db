@@ -20,10 +20,12 @@ export type GetKey<T> = Extract<keyof T, string>;
  * The base structure of the json database.
  */
 export type ContentBase = {
-    [path: string]: {
-        entryType: EntryType,
-        baseType?: any,
-        dataType: any
+    paths: {
+        [path: string]: {
+            entryType: EntryType,
+            baseType?: any,
+            dataType: any
+        }
     }
 };
 
@@ -84,10 +86,10 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @param {*} initialValue The initial value to set.
+     * @param {ContentDef["paths"][Path]["dataType"]} initialValue The initial value to set.
      * @memberof TypedJsonDB
      */
-    pushIfNotExists<Path extends GetKey<ContentDef>>(path: Path, initialValue: ContentDef[Path]["dataType"]): void {
+    pushIfNotExists<Path extends GetKey<ContentDef["paths"]>>(path: Path, initialValue: ContentDef["paths"][Path]["dataType"]): void {
         if (!this.internalDB.exists(path)) {
             this.internalDB.push(path, initialValue);
         }
@@ -98,10 +100,10 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @returns {ContentDef[Path]["dataType"]} The wanted value, typed.
+     * @returns {ContentDef["paths"][Path]["dataType"]} The wanted value, typed.
      * @memberof TypedJsonDB
      */
-    get<Path extends GetKey<ContentDef>>(path: Path): ContentDef[Path]["dataType"] {
+    get<Path extends GetKey<ContentDef["paths"]>>(path: Path): ContentDef["paths"][Path]["dataType"] {
         return this.secureGet(path);
     }
 
@@ -126,10 +128,10 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
      * @param {(string | number)} key The key where to find the data (optional for arrays, mandatory for dictionaries).
-     * @returns {ContentDef[Path]["baseType"]} The wanted value, typed.
+     * @returns {ContentDef["paths"][Path]["baseType"]} The wanted value, typed.
      * @memberof TypedJsonDB
      */
-    getAt<Path extends GetKey<ContentDef>>(path: Path, key?: string | number): ContentDef[Path]["baseType"] {
+    getAt<Path extends GetKey<ContentDef["paths"]>>(path: Path, key?: string | number): ContentDef["paths"][Path]["baseType"] {
         switch (this.contentInstance[path]) {
             case "single":
                 throw new DataError("Please use the get() method. You can't get a single object at a given key.", 97);
@@ -153,7 +155,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @returns {boolean} Whether data exists.
      * @memberof TypedJsonDB
      */
-    exists<Path extends GetKey<ContentDef>>(path: Path): boolean {
+    exists<Path extends GetKey<ContentDef["paths"]>>(path: Path): boolean {
         return this.internalDB.exists(path);
     }
 
@@ -162,7 +164,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param rootPath Base dataPath from where to start searching
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
-    filter<T, Path extends GetKey<ContentDef>>(rootPath: Path, callback: FindCallback): T[] | undefined {
+    filter<T, Path extends GetKey<ContentDef["paths"]>>(rootPath: Path, callback: FindCallback): T[] | undefined {
         return this.internalDB.filter<T>(rootPath, callback);
     }
 
@@ -171,7 +173,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param rootPath Base dataPath from where to start searching
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
-    find<T, Path extends GetKey<ContentDef>>(rootPath: Path, callback: FindCallback): T | undefined {
+    find<T, Path extends GetKey<ContentDef["paths"]>>(rootPath: Path, callback: FindCallback): T | undefined {
         return this.internalDB.find<T>(rootPath, callback);
     }
 
@@ -182,7 +184,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param {Path} path The user specified path to data.
      * @memberof TypedJsonDB
      */
-    delete<Path extends GetKey<ContentDef>>(path: Path) {
+    delete<Path extends GetKey<ContentDef["paths"]>>(path: Path): void {
         this.internalDB.delete(path);
     }
 
@@ -191,11 +193,11 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @param {ContentDef[Path]["dataType"]} data Some data to set.
+     * @param {ContentDef["paths"][Path]["dataType"]} data Some data to set.
      * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
      * @memberof TypedJsonDB
      */
-    set<Path extends GetKey<ContentDef>>(path: Path, data: ContentDef[Path]["dataType"], overwrite?: boolean) {
+    set<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["dataType"], overwrite?: boolean): void {
         this.internalDB.push(path, data, overwrite);
     }
 
@@ -208,7 +210,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
      * @memberof TypedJsonDB
      */
-    push<Path extends GetKey<ContentDef>>(path: Path, data: ContentDef[Path]["baseType"], key?: string | number, overwrite?: boolean) {
+    push<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["baseType"], key?: string | number, overwrite?: boolean): void {
         switch (this.contentInstance[path]) {
             case "single":
                 this.internalDB.push(path, data, overwrite);
