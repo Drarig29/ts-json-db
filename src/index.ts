@@ -71,7 +71,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @throws {DataError} when the object key is complex.
      * @memberof TypedJsonDB
      */
-    ensureSimpleKey(key: string | undefined): void {
+    ensureSimpleKey(key: string | null): void {
         if (!key) {
             throw new DataError("You have to give a key where to push.", 98);
         }
@@ -142,7 +142,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                     return this.secureGet(`${path}[-1]`); // Get the last object by default.
                 }
             case "dictionary":
-                this.ensureSimpleKey(key?.toString());
+                this.ensureSimpleKey(key ? key.toString() : null);
                 return this.secureGet(`${path}/${key}`);
         }
     }
@@ -223,7 +223,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 }
                 break;
             case "dictionary":
-                this.ensureSimpleKey(key?.toString());
+                this.ensureSimpleKey(key ? key.toString() : null);
                 this.internalDB.push(`${path}/${key}`, data, overwrite);
                 break;
         }
