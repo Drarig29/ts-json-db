@@ -67,7 +67,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @type {JsonDB}
      * @memberof TypedDatabase
      */
-    internalDB: JsonDB;
+    internal: JsonDB;
     contentInstance: ContentInstance;
 
     /**
@@ -80,7 +80,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     constructor(filename: string, contentInstance: ContentInstance, saveOnPush?: boolean, humanReadable?: boolean, separator?: string) {
-        this.internalDB = new JsonDB(filename, saveOnPush, humanReadable, separator);
+        this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
         this.contentInstance = contentInstance;
     }
 
@@ -91,13 +91,13 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @throws {DataError} when the object key is complex.
      * @memberof TypedJsonDB
      */
-    ensureSimpleKey(key: string | null): void {
+    ensureSimpleDictionaryKey(key: string | null): void {
         if (!key) {
-            throw new DataError("You have to give a key where to push.", 98);
+            throw new DataError("You must give the key where to push in the dictionary.", 98);
         }
 
         if (!key.match(/^[^\/[]+\/?$/)) {
-            throw new DataError("You can't set a complex object key. The return type wouldn't be correct. Use the internal database.", 99);
+            throw new DataError("You can't set a complex dictionary key. The return type wouldn't be correct. Use the internal database.", 99);
         }
     }
 
@@ -110,8 +110,8 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     pushIfNotExists<Path extends GetKey<ContentDef["paths"]>>(path: Path, initialValue: ContentDef["paths"][Path]["dataType"]): void {
-        if (!this.internalDB.exists(path)) {
-            this.internalDB.push(path, initialValue);
+        if (!this.internal.exists(path)) {
+            this.internal.push(path, initialValue);
         }
     }
 
@@ -131,15 +131,44 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * A raw data getter, which checks for the existance of data before getting it.
      *
      * @param {string} path The user specified path to data. Autocomplete not available.
-     * @returns {*}
+     * @returns {*} The wanted value, not typed.
      * @memberof TypedJsonDB
      */
     secureGet(path: string): any {
-        if (this.internalDB.exists(path)) {
-            return this.internalDB.getData(path);
+        if (this.internal.exists(path)) {
+            return this.internal.getData(path);
         }
 
         return null;
+    }
+
+    /**
+     * A secure version of push() which can throw if data doesn't exist before pushing.
+     *
+     * @param {string} path The user specified path to data.
+     * @param {*} data Some data to push.
+     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (default = true).
+     * @param {boolean} [throwIfNotExists] Whether to throw an error if data doesn't exist (default = false).
+     * @throws {DataError} if data doesn't exist at the specified path.
+     * @memberof TypedJsonDB
+     */
+    securePush(path: string, data: any, overwrite: boolean, throwIfNotExists: boolean): void {
+        if (!throwIfNotExists || this.internal.exists(this.removeEmptySquareBrackets(path))) {
+            this.internal.push(path, data, overwrite);
+        } else {
+            throw new DataError("You must push the data once before being able to merge it.", 96);
+        }
+    }
+
+    /**
+     * Removes empty square brackets from a path, so that the exists() function finds the path.
+     *
+     * @param {string} path The user specified path to data.
+     * @returns {string}
+     * @memberof TypedJsonDB
+     */
+    removeEmptySquareBrackets(path: string): string {
+        return path.replace(/(\/[^[]+)\[\]$/, "$1");
     }
 
     /**
@@ -147,7 +176,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
-     * @param {(string | number)} key The key where to find the data (optional for arrays, mandatory for dictionaries).
+     * @param {(string | number)} key The key where to find the data (optional for arrays, required for dictionaries).
      * @returns {ContentDef["paths"][Path]["baseType"]} The wanted value, typed.
      * @memberof TypedJsonDB
      */
@@ -162,7 +191,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                     return this.secureGet(`${path}[-1]`); // Get the last object by default.
                 }
             case "dictionary":
-                this.ensureSimpleKey(key ? key.toString() : null);
+                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
                 return this.secureGet(`${path}/${key}`);
         }
     }
@@ -176,7 +205,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     exists<Path extends GetKey<ContentDef["paths"]>>(path: Path): boolean {
-        return this.internalDB.exists(path);
+        return this.internal.exists(path);
     }
 
     /**
@@ -185,7 +214,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
     filter<T, Path extends GetKey<ContentDef["paths"]>>(rootPath: Path, callback: FindCallback): T[] | undefined {
-        return this.internalDB.filter<T>(rootPath, callback);
+        return this.internal.filter<T>(rootPath, callback);
     }
 
     /**
@@ -194,7 +223,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @param callback Method to filter the result and find the wanted entry. Receive the entry and its index.
      */
     find<T, Path extends GetKey<ContentDef["paths"]>>(rootPath: Path, callback: FindCallback): T | undefined {
-        return this.internalDB.find<T>(rootPath, callback);
+        return this.internal.find<T>(rootPath, callback);
     }
 
     /**
@@ -205,7 +234,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     delete<Path extends GetKey<ContentDef["paths"]>>(path: Path): void {
-        this.internalDB.delete(path);
+        this.internal.delete(path);
     }
 
     /**
@@ -218,7 +247,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     set<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["dataType"], overwrite?: boolean): void {
-        this.internalDB.push(path, data, overwrite);
+        this.internal.push(path, data, overwrite);
     }
 
     /**
@@ -227,39 +256,53 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @template Path A path from any entry type (same behavior as set() for single objects).
      * @param {Path} path The user specified path to data.
      * @param {ContentDef["paths"][Path]["baseType"]} data Some data to push.
-     * @param {(string | number)} key The key where to push the data (optional for single objects and arrays, mandatory for dictionaries).
-     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (true by default).
+     * @param {(string | number)} key The key where to push the data (optional for single objects and arrays, required for dictionaries).
+     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (default = true).
+     * @param {boolean} [throwIfNotExists] Whether to throw an error if data doesn't exist (default = false).
      * @memberof TypedJsonDB
      */
-    push<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["baseType"], key?: string | number, overwrite?: boolean): void {
+    push<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["baseType"], key?: string | number, overwrite: boolean = true, throwIfNotExists: boolean = false): void {
         switch (this.contentInstance[path]) {
             case "single":
-                this.internalDB.push(path, data, overwrite);
+                this.securePush(path, data, overwrite, throwIfNotExists);
                 break;
             case "array":
                 if (key) {
-                    this.internalDB.push(`${path}[${key}]`, data, overwrite);
+                    this.securePush(`${path}[${key}]`, data, overwrite, throwIfNotExists);
                 } else {
-                    this.internalDB.push(`${path}[]`, data, overwrite);
+                    this.securePush(`${path}[]`, data, overwrite, throwIfNotExists);
                 }
                 break;
             case "dictionary":
-                this.ensureSimpleKey(key ? key.toString() : null);
-                this.internalDB.push(`${path}/${key}`, data, overwrite);
+                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
+                this.securePush(`${path}/${key}`, data, overwrite, throwIfNotExists);
                 break;
         }
     }
 
     /**
-     * Merges data at the given path.
+     * Merges data at the given path. Data must already exist at the given path to ensure the right database structure is followed.
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
      * @param {Partial<ContentDef["paths"][Path]["baseType"]>} data Some data to merge.
-     * @param {(string | number)} key The key where to merge the data (optional for single objects and arrays, mandatory for dictionaries).
+     * @param {(string | number)} key The key where to push the data (optional for single objects, required for arrays and dictionaries).
+     * @throws {DataError} if data doesn't exist at the specified path.
      * @memberof TypedJsonDB
      */
     merge<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: Partial<ContentDef["paths"][Path]["baseType"]>, key?: string | number): void {
-        this.push(path, data, key, false); // Use merging.
+        switch (this.contentInstance[path]) {
+            case "single":
+                this.securePush(path, data, false, true);
+                break;
+            case "array":
+                if (!key) throw new DataError("You must give the index where to push in the array.", 95);
+                this.securePush(`${path}[${key}]`, data, false, true);
+                break;
+            case "dictionary":
+                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
+                this.securePush(`${path}/${key}`, data, false, true);
+                break;
+        }
     }
 }

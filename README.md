@@ -32,14 +32,17 @@ interface Restaurant {
     turnOver: number
 }
 
+interface Login {
+    username: string,
+    password: string
+};
+
 interface ContentDef extends ContentBase {
     paths: {
         '/login': {
             entryType: "single",
-            dataType: {
-                username: string,
-                password: string
-            }
+            baseType: Login,
+            dataType: Login
         },
         '/restaurants': {
             entryType: "array",
