@@ -226,7 +226,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      *
      * @template Path A path from any entry type (same behavior as set() for single objects).
      * @param {Path} path The user specified path to data.
-     * @param {ContentDef["paths"][Path]["baseType"]} data Some data to set.
+     * @param {ContentDef["paths"][Path]["baseType"]} data Some data to push.
      * @param {(string | number)} key The key where to push the data (optional for single objects and arrays, mandatory for dictionaries).
      * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (true by default).
      * @memberof TypedJsonDB
@@ -248,5 +248,18 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 this.internalDB.push(`${path}/${key}`, data, overwrite);
                 break;
         }
+    }
+
+    /**
+     * Merges data at the given path.
+     *
+     * @template Path A path from any entry type.
+     * @param {Path} path The user specified path to data.
+     * @param {Partial<ContentDef["paths"][Path]["baseType"]>} data Some data to merge.
+     * @param {(string | number)} key The key where to merge the data (optional for single objects and arrays, mandatory for dictionaries).
+     * @memberof TypedJsonDB
+     */
+    merge<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: Partial<ContentDef["paths"][Path]["baseType"]>, key?: string | number): void {
+        this.push(path, data, key, false); // Use merging.
     }
 }

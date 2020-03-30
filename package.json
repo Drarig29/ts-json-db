@@ -21,7 +21,9 @@
         "database",
         "json",
         "typescript",
-        "typed"
+        "typed",
+        "typing",
+        "db"
     ],
     "repository": {
         "type": "git",

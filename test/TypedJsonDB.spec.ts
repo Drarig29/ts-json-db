@@ -70,4 +70,11 @@ describe("TypedJsonDB tests", () => {
         db.push("/restaurants", restaurant);
         assert(db.getAt("/restaurants") === restaurant);
     });
+
+    it("should push data and then push partial data (by merging)", () => {
+        let db = new TypedJsonDB<ContentDef>("config.json", contentInstance);
+        db.push("/login", { username: "user", password: "pass" });
+        db.merge("/login", { password: "test" });
+        assert(db.get("/login").password == "test");
+    });
 });
