@@ -92,7 +92,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedJsonDB
      */
     ensureSimpleDictionaryKey(key: string | null): void {
-        if (!key) {
+        if (key === null) {
             throw new DataError("You must give the key where to push in the dictionary.", 98);
         }
 
@@ -185,13 +185,13 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
             case "single":
                 throw new DataError("Please use the get() method. You can't get a single object at a given key.", 97);
             case "array":
-                if (key) {
-                    return this.secureGet(`${path}[${key}]`);
-                } else {
+                if (key === undefined) {
                     return this.secureGet(`${path}[-1]`); // Get the last object by default.
+                } else {
+                    return this.secureGet(`${path}[${key}]`);
                 }
             case "dictionary":
-                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
+                this.ensureSimpleDictionaryKey(key === undefined ? null : key.toString());
                 return this.secureGet(`${path}/${key}`);
         }
     }
@@ -267,14 +267,14 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 this.securePush(path, data, overwrite, throwIfNotExists);
                 break;
             case "array":
-                if (key) {
-                    this.securePush(`${path}[${key}]`, data, overwrite, throwIfNotExists);
-                } else {
+                if (key === undefined) {
                     this.securePush(`${path}[]`, data, overwrite, throwIfNotExists);
+                } else {
+                    this.securePush(`${path}[${key}]`, data, overwrite, throwIfNotExists);
                 }
                 break;
             case "dictionary":
-                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
+                this.ensureSimpleDictionaryKey(key === undefined ? null : key.toString());
                 this.securePush(`${path}/${key}`, data, overwrite, throwIfNotExists);
                 break;
         }
@@ -296,11 +296,11 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 this.securePush(path, data, false, true);
                 break;
             case "array":
-                if (!key) throw new DataError("You must give the index where to push in the array.", 95);
+                if (key === undefined) throw new DataError("You must give the index where to push in the array.", 95);
                 this.securePush(`${path}[${key}]`, data, false, true);
                 break;
             case "dictionary":
-                this.ensureSimpleDictionaryKey(key ? key.toString() : null);
+                this.ensureSimpleDictionaryKey(key === undefined ? null : key.toString());
                 this.securePush(`${path}/${key}`, data, false, true);
                 break;
         }
