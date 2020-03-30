@@ -17,15 +17,35 @@ type GetKey<T> = Extract<keyof T, string>;
 export type Dictionary<V> = { [key: string]: V };
 
 /**
+ * The base structure for an entry.
+ */
+type EntryBase<T extends EntryType, U, V> = {
+    entryType: T,
+    baseType: U,
+    dataType: V
+};
+
+/**
+ * The structure for an entry of type "single".
+ */
+type SingleEntry<T> = EntryBase<"single", T, T>;
+
+/**
+ * The structure for an entry of type "array".
+ */
+type ArrayEntry<T> = EntryBase<"array", T, T[]>;
+
+/**
+ * The structure for an entry of type "dictionary".
+ */
+type DictionaryEntry<T> = EntryBase<"dictionary", T, Dictionary<T>>;
+
+/**
  * The base structure of the json database.
  */
 export type ContentBase = {
     [root in "paths"]: {
-        [path: string]: {
-            entryType: EntryType,
-            baseType?: any,
-            dataType: any
-        }
+        [path: string]: SingleEntry<any> | ArrayEntry<any> | DictionaryEntry<any>
     }
 };
 
@@ -67,7 +87,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     /**
      * Ensures that the object key is simple to get the good return type.
      *
-     * @param {string} key The object key to check.
+     * @param {(string | null)} key The object key to check.
      * @throws {DataError} when the object key is complex.
      * @memberof TypedJsonDB
      */
@@ -82,7 +102,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     }
 
     /**
-     * Push initial data when it doesn't exist.
+     * Push full initial data when it doesn't exist.
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
@@ -189,12 +209,12 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     }
 
     /**
-     * Sets data at the given path.
+     * Sets full data at the given path.
      *
      * @template Path A path from any entry type.
      * @param {Path} path The user specified path to data.
      * @param {ContentDef["paths"][Path]["dataType"]} data Some data to set.
-     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
+     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (true by default).
      * @memberof TypedJsonDB
      */
     set<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["dataType"], overwrite?: boolean): void {
@@ -202,12 +222,13 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     }
 
     /**
-     * 
+     * Pushes data at the given path.
      *
      * @template Path A path from any entry type (same behavior as set() for single objects).
      * @param {Path} path The user specified path to data.
+     * @param {ContentDef["paths"][Path]["baseType"]} data Some data to set.
      * @param {(string | number)} key The key where to push the data (optional for single objects and arrays, mandatory for dictionaries).
-     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged.
+     * @param {boolean} [overwrite] Whether to overwrite data at the given path. If false, data will be merged (true by default).
      * @memberof TypedJsonDB
      */
     push<Path extends GetKey<ContentDef["paths"]>>(path: Path, data: ContentDef["paths"][Path]["baseType"], key?: string | number, overwrite?: boolean): void {

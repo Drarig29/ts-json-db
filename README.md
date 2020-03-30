@@ -70,6 +70,6 @@ Mainly, I had to do two things I didn't find a better solution for:
 
 - The need for a type definition `ContentBase` **and** an instance definition `ContentInstance`. The instance definition is needed to be able to check types (in `push()` and `getAt()`) at runtime. I could have created a method for each type (`single`, `array`, `dictionary`), but I didn't want to complexify the syntax too much.
 
-For a `single` object, you only need to specify `dataType`. For an `array` or a `dictionary`, you need both `baseType` and `dataType`.
+For all entry types (`single`, `array` and `dictionary`), you need to specify `dataType` and `baseType`. Some methods use one and others use the other.
 
 For a `dictionary`, you must use my implementation of generic `Dictionary<T>` (or the same). Otherwise, it won't work.

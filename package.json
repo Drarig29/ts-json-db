@@ -7,7 +7,7 @@
     "scripts": {
         "prepare": "tsc",
         "build": "tsc",
-        "test": "tsc -p tsconfig.mocha.json && mocha"
+        "test": "tsc && mocha"
     },
     "main": "dist/src/index.js",
     "types": "dist/src/",

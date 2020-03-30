@@ -13,14 +13,17 @@ export const contentInstance: ContentInstance = {
     '/teams': "dictionary"
 };
 
+export interface Login {
+    username: string,
+    password: string
+}
+
 export interface ContentDef extends ContentBase {
     paths: {
         '/login': {
             entryType: "single",
-            dataType: {
-                username: string,
-                password: string
-            }
+            baseType: Login,
+            dataType: Login
         },
         '/restaurants': {
             entryType: "array",
