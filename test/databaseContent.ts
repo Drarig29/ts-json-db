@@ -1,4 +1,4 @@
-import { ContentBase, Dictionary, ContentInstance } from "../src";
+import { ContentBase, Dictionary } from "../src";
 
 export interface Restaurant {
     name: string
@@ -6,12 +6,6 @@ export interface Restaurant {
     memberCount: number,
     turnOver: number
 }
-
-export const contentInstance: ContentInstance = {
-    '/login': "single",
-    '/restaurants': "array",
-    '/teams': "dictionary"
-};
 
 export interface Login {
     username: string,
@@ -22,18 +16,15 @@ export interface ContentDef extends ContentBase {
     paths: {
         '/login': {
             entryType: "single",
-            baseType: Login,
-            dataType: Login
+            valueType: Login
         },
         '/restaurants': {
             entryType: "array",
-            baseType: Restaurant,
-            dataType: Restaurant[]
+            valueType: Restaurant
         },
         '/teams': {
             entryType: "dictionary",
-            baseType: string,
-            dataType: Dictionary<string>
+            valueType: string
         }
     }
 }
