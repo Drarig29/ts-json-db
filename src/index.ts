@@ -42,7 +42,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @memberof TypedDatabase
      */
     public internal: JsonDB;
-    
+
     /**
      * Creates an instance of TypedJsonDB.
      * @param {string} filename Where to save the database.
@@ -59,18 +59,36 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     single = {
         get: <Path extends EntriesOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
             return null;
-        }
+        },
+        set: () => { },
+        merge: () => { }
     }
-    
+
     array = {
         get: <Path extends EntriesOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
             return null;
+        },
+        set: <Path extends EntriesOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
+
+        },
+        value: {
+            get: () => { },
+            push: () => { },
+            merge: () => { }
         }
     }
-    
+
     dictionary = {
         get: <Path extends EntriesOfType<ContentDef["paths"], "dictionary">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
             return null;
+        },
+        set: <Path extends EntriesOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
+
+        },
+        value: {
+            get: () => { },
+            push: () => { },
+            merge: () => { }
         }
     }
 }
