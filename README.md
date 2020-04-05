@@ -63,7 +63,7 @@ let result = db.get("/login");
 console.log(result);
 ```
 
-You can see the Mocha tests to find usage examples.
+You can see in the `example` folder to find usage examples.
 
 ## Reason of choices
 

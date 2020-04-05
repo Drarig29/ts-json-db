@@ -6,8 +6,7 @@
     "license": "MIT",
     "scripts": {
         "prepare": "tsc",
-        "build": "tsc",
-        "test": "tsc && mocha"
+        "build": "tsc"
     },
     "main": "dist/src/index.js",
     "types": "dist/src/",
@@ -34,12 +33,7 @@
         "node-json-db": "^1.0.3"
     },
     "devDependencies": {
-        "typescript": "^3.8.3",
-        "mocha": "^7.1.1",
         "@types/node": "^12.12.31",
-        "@types/mocha": "^7.0.2"
-    },
-    "mocha": {
-        "spec": "dist/test/*.spec.js"
+        "typescript": "^3.8.3"
     }
 }
