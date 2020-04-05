@@ -1,1 +1,1 @@
-{"login":{"username":"user","password":"test"},"teams":{"test1":"foo","test2":"bar","key":"value"},"restaurants":[{"chef":"eheh","name":"hello","memberCount":8,"turnOver":0}]}
+{"login":{"username":"user1","password":"pass"},"restaurants":[{"chef":"hello","memberCount":2,"name":"foo","turnOver":10},{"chef":"hello","memberCount":2,"name":"12","turnOver":10},{"chef":"hello","memberCount":2,"name":"foo","turnOver":10}],"teams":{"test":"coucou","here":"12"}}

@@ -28,7 +28,7 @@ export type ContentBase = {
     }
 };
 
-type EntriesOfType<T, U extends EntryType> = { [Key in keyof T]: T[Key] extends { entryType: U } ? Key : never }[keyof T];
+type PathsOfType<T, U extends EntryType> = { [Key in keyof T]: T[Key] extends { entryType: U } ? Key : never }[GetKey<T>];
 
 /**
  * Typed wrapper around the JsonDB. Use the internal database field to use non-typed functions.
@@ -41,7 +41,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @type {JsonDB}
      * @memberof TypedDatabase
      */
-    public internal: JsonDB;
+    private internal: JsonDB;
 
     /**
      * Creates an instance of TypedJsonDB.
@@ -57,38 +57,63 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     }
 
     single = {
-        get: <Path extends EntriesOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
-            return null;
+        get: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
+            return this.internal.getData(path);
         },
-        set: () => { },
-        merge: () => { }
+        set: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
+            this.internal.push(path, data, true);
+        },
+        merge: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>): void => {
+            this.internal.push(path, data, false);
+        },
     }
 
     array = {
-        get: <Path extends EntriesOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
-            return null;
+        get: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][] => {
+            return this.internal.getData(path);
         },
-        set: <Path extends EntriesOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
-
+        set: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"][]): void => {
+            this.internal.push(path, data, true);
         },
         value: {
-            get: () => { },
-            push: () => { },
-            merge: () => { }
+            get: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index?: number): ContentDef["paths"][Path]["valueType"] => {
+                if (index === undefined)
+                    return this.internal.getData(`${path}[-1]`);
+                else
+                    return this.internal.getData(`${path}[${index}]`);
+            },
+            push: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"], index?: number): void => {
+                if (index === undefined)
+                    return this.internal.push(`${path}[]`, data, true);
+                else
+                    return this.internal.push(`${path}[${index}]`, data, true);
+            },
+            merge: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index?: number): void => {
+                if (index === undefined)
+                    return this.internal.push(`${path}[]`, data, false);
+                else
+                    return this.internal.push(`${path}[${index}]`, data, false);
+            }
         }
     }
 
     dictionary = {
-        get: <Path extends EntriesOfType<ContentDef["paths"], "dictionary">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
-            return null;
+        get: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]> => {
+            return this.internal.getData(path);
         },
-        set: <Path extends EntriesOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
-
+        set: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Dictionary<ContentDef["paths"][Path]["valueType"]>): void => {
+            this.internal.push(path, data, true);
         },
         value: {
-            get: () => { },
-            push: () => { },
-            merge: () => { }
+            get: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"] => {
+                return this.internal.getData(`${path}/${key}`);
+            },
+            push: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"], key: string): void => {
+                return this.internal.push(`${path}/${key}`, data, true);
+            },
+            merge: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void => {
+                return this.internal.push(`${path}/${key}`, data, false);
+            }
         }
     }
 }
