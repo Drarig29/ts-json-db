@@ -36,7 +36,6 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
 
     /**
      * The encapsulated actual JSON database.
-     *
      * @type {JsonDB}
      * @memberof TypedDatabase
      */
@@ -55,11 +54,53 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
         this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
     }
 
+    /**
+     * Get a `single` value.
+     * @template Path A path leading to a `single` value.
+     * @param {Path} path The path where to get data.
+     * @returns {ContentDef["paths"][Path]["valueType"]} A `single` value.
+     * @memberof TypedJsonDB
+     */
     get<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"];
+
+    /**
+     * Get a whole `array`.
+     * @template Path A path leading to an `array`.
+     * @param {Path} path The path where to get data.
+     * @returns {ContentDef["paths"][Path]["valueType"][]} An `array`.
+     * @memberof TypedJsonDB
+     */
     get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][];
+
+    /**
+     * Get an `array` value.
+     * @template Path A path leading to an `array` value.
+     * @param {Path} path The path where to get data.
+     * @param {number} index The index of the value (`-1` to get the last one).
+     * @returns {ContentDef["paths"][Path]["valueType"]} An `array` value.
+     * @memberof TypedJsonDB
+     */
     get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): ContentDef["paths"][Path]["valueType"];
+
+    /**
+     * Get a whole `dictionary`.
+     * @template Path A path leading to a `dictionary`.
+     * @param {Path} path The path where to get data.
+     * @returns {Dictionary<ContentDef["paths"][Path]["valueType"]>} A `dictionary`.
+     * @memberof TypedJsonDB
+     */
     get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]>;
+
+    /**
+     * Get a `dictionary` value.
+     * @template Path A path leading to a `dictionary` value.
+     * @param {Path} path The path where to get data.
+     * @param {string} key The key of the value.
+     * @returns {ContentDef["paths"][Path]["valueType"]} A `dictionary` value.
+     * @memberof TypedJsonDB
+     */
     get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"];
+
     get(path: any, location?: any): any {
         if (typeof location === "number")
             path += "[" + location + "]";
@@ -122,4 +163,16 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     // reload(): void;
     // load(): void;
     // save(force?: boolean): void;
+
+    helpMeRemember!: {
+        singles: {
+            hintPlease<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): void;
+        },
+        arrays: {
+            hintPlease<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): void;
+        },
+        dictionaries: {
+            hintPlease<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): void;
+        }
+    };
 }
