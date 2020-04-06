@@ -1,1 +1,1 @@
-{"login":{"username":"user1","password":"pass"},"restaurants":[{"chef":"hello","memberCount":2,"name":"foo","turnOver":10},{"chef":"hello","memberCount":2,"name":"foo","turnOver":10},{"chef":"hello","memberCount":2,"name":"foo","turnOver":10}]}
+{"login":{"username":"user1","password":"pass"},"restaurants":[{"chef":"hello","memberCount":2,"name":"foo","turnOver":10},{"chef":"hello","memberCount":2,"name":"12","turnOver":10},{"chef":"hello","memberCount":2,"name":"foo","turnOver":10}],"teams":{"test":"coucou","here":"merged"}}

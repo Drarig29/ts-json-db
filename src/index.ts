@@ -55,86 +55,63 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
         this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
     }
 
-    single = {
-        get: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"] => {
-            return this.internal.getData(path);
-        },
-        set: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void => {
-            this.internal.push(path, data, true);
-        },
-        merge: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>): void => {
-            if (!this.internal.exists(path))
-                throw new Error("You tried to merge with unexisting data (single). The resulting type wouldn't be defined.");
+    get<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"];
+    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][];
+    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): ContentDef["paths"][Path]["valueType"];
+    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]>;
+    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"];
+    get(path: any, location?: any): any {
+        if (typeof location === "number")
+            path += "[" + location + "]";
+        else if (typeof location === "string")
+            path += "/" + location;
 
-            this.internal.push(path, data, false);
-        }
+        return this.internal.getData(path);
     }
 
-    array = {
-        get: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][] => {
-            return this.internal.getData(path);
-        },
-        set: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"][]): void => {
-            this.internal.push(path, data, true);
-        },
-        value: {
-            get: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index?: number): ContentDef["paths"][Path]["valueType"] => {
-                if (index === undefined)
-                    return this.internal.getData(`${path}[-1]`);
-                else
-                    return this.internal.getData(`${path}[${index}]`);
-            },
-            push: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"], index?: number): void => {
-                if (index === undefined)
-                    return this.internal.push(`${path}[]`, data, true);
-                else
-                    return this.internal.push(`${path}[${index}]`, data, true);
-            },
-            merge: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index: number): void => {
-                const dataPath = `${path}[${index}]`;
-                if (!this.internal.exists(dataPath))
-                    throw new Error("You tried to merge with unexisting data (array). The resulting type wouldn't be defined.");
-
-                return this.internal.push(dataPath, data, false);
-            }
-        }
+    set<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void;
+    set<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"][]): void;
+    set<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Dictionary<ContentDef["paths"][Path]["valueType"]>): void;
+    set(path: any, data: any): void {
+        this.internal.push(path, data);
     }
 
-    dictionary = {
-        get: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]> => {
-            return this.internal.getData(path);
-        },
-        set: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Dictionary<ContentDef["paths"][Path]["valueType"]>): void => {
-            this.internal.push(path, data, true);
-        },
-        value: {
-            get: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"] => {
-                return this.internal.getData(`${path}/${key}`);
-            },
-            push: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"], key: string): void => {
-                return this.internal.push(`${path}/${key}`, data, true);
-            },
-            merge: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void => {
-                const dataPath = `${path}/${key}`;
-                if (!this.internal.exists(dataPath))
-                    throw new Error("You tried to merge with unexisting data (dictionary). The resulting type wouldn't be defined.");
+    push<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"], index?: number): void;
+    push<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"], key: string): void;
+    push(path: any, data: any, location: any): void {
+        if (typeof location === "number")
+            path += "[" + location + "]";
+        else if (typeof location === "string")
+            path += "/" + location;
+        else
+            path += "[]";
 
-                return this.internal.push(dataPath, data, false);
-            }
-        }
+        this.internal.push(path, data, true);
+    }
+
+    merge<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>): void;
+    merge<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index: number): void;
+    merge<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void;
+    merge(path: any, data: any, location?: any): void {
+        if (typeof location === "number")
+            path += "[" + location + "]";
+        else if (typeof location === "string")
+            path += "/" + location;
+
+        this.internal.push(path, data, false);
     }
 
     exists<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): boolean;
     exists<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): boolean;
     exists<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): boolean;
     exists(path: any, location?: any): any {
-        if (typeof location === "number") // array
+        if (typeof location === "number")
             return this.internal.exists(`${path}[${location}]`);
 
-        if (typeof location === "string") // dictionary
+        if (typeof location === "string")
             return this.internal.exists(`${path}/${location}`);
 
-        return this.internal.exists(path); // single or root
+        return this.internal.exists(path);
     }
 
     // exists(dataPath: string): boolean;
