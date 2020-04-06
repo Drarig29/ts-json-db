@@ -36,25 +36,45 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
 
     /**
      * The encapsulated actual JSON database.
+     * @private
      * @type {JsonDB}
      * @memberof TypedDatabase
      */
     private internal: JsonDB;
 
     /**
-     * Creates an instance of TypedJsonDB.
-     * @param {string} filename Where to save the database.
-     * @param {ContentInstance} contentInstance
-     * @param {boolean} [saveOnPush] Save the database at each push command into the json file.
-     * @param {boolean} [humanReadable] The json file will be easily readable by a human.
-     * @param {string} [separator] What to use as a separator.
+     * Throw exceptions if the data is not found.
+     *
+     * @private
+     * @type {boolean}
      * @memberof TypedJsonDB
      */
-    constructor(filename: string, saveOnPush?: boolean, humanReadable?: boolean, separator?: string) {
+    private throwIfNotFound: boolean;
+
+    /**
+     * Creates an instance of TypedJsonDB.
+     * @param {string} filename Where to save the database.
+     * @param {boolean} [throwIfNotFound] Throw exceptions if the data is not found. (default: `true`)
+     * @param {boolean} [saveOnPush] Save the database at each push command into the json file. (default: `true`)
+     * @param {boolean} [humanReadable] The json file will be easily readable by a human. (default: `false`)
+     * @param {string} [separator] What to use as a separator. (default: `'/'`)
+     * @memberof TypedJsonDB
+     */
+    constructor(filename: string, throwIfNotFound: boolean = true, saveOnPush: boolean = true, humanReadable: boolean = false, separator: string = '/') {
         this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
+        this.throwIfNotFound = throwIfNotFound || true;
     }
 
-    private updatePath(path: any, location: any, arrayEnd: boolean) {
+    /**
+     * Updates the path if it's an array or a dictionary.
+     * @private
+     * @param {*} path The base path to be updated.
+     * @param {*} location The location (index or key).
+     * @param {boolean} arrayEnd Whether to add `[]` at the end of the path for an array.
+     * @returns The updated path.
+     * @memberof TypedJsonDB
+     */
+    private updatePath(path: any, location: any, arrayEnd: boolean): string {
         if (typeof location === "number")
             path += "[" + location + "]"; // Array value.
         else if (typeof location === "string")
@@ -69,51 +89,58 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * Get a `single` value.
      * @template Path A path leading to a `single` value.
      * @param {Path} path The path you'll choose.
-     * @returns {ContentDef["paths"][Path]["valueType"]} A `single` value.
+     * @returns {ContentDef["paths"][Path]["valueType"]} A `single` value or `null` if not found.
      * @memberof TypedJsonDB
      */
-    get<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"];
+    get<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): ContentDef["paths"][Path]["valueType"] | null;
 
     /**
      * Get a whole `array`.
      * @template Path A path leading to an `array`.
      * @param {Path} path The path you'll choose.
-     * @returns {ContentDef["paths"][Path]["valueType"][]} An `array`.
+     * @returns {ContentDef["paths"][Path]["valueType"][]} An `array` or `null` if not found.
      * @memberof TypedJsonDB
      */
-    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][];
+    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path): ContentDef["paths"][Path]["valueType"][] | null;
 
     /**
      * Get an `array` value.
      * @template Path A path leading to an `array`.
      * @param {Path} path The path you'll choose.
      * @param {number} index The index of the value (`-1` to get the last one).
-     * @returns {ContentDef["paths"][Path]["valueType"]} An `array` value.
+     * @returns {ContentDef["paths"][Path]["valueType"]} An `array` value or `null` if not found.
      * @memberof TypedJsonDB
      */
-    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): ContentDef["paths"][Path]["valueType"];
+    get<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): ContentDef["paths"][Path]["valueType"] | null;
 
     /**
      * Get a whole `dictionary`.
      * @template Path A path leading to a `dictionary`.
      * @param {Path} path The path you'll choose.
-     * @returns {Dictionary<ContentDef["paths"][Path]["valueType"]>} A `dictionary`.
+     * @returns {Dictionary<ContentDef["paths"][Path]["valueType"]>} A `dictionary` or `null` if not found.
      * @memberof TypedJsonDB
      */
-    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]>;
+    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path): Dictionary<ContentDef["paths"][Path]["valueType"]> | null;
 
     /**
      * Get a `dictionary` value.
      * @template Path A path leading to a `dictionary`.
      * @param {Path} path The path you'll choose.
      * @param {string} key The key of the value.
-     * @returns {ContentDef["paths"][Path]["valueType"]} A `dictionary` value.
+     * @returns {ContentDef["paths"][Path]["valueType"]} A `dictionary` value or `null` if not found.
      * @memberof TypedJsonDB
      */
-    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"];
+    get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"] | null;
 
     get(path: any, location?: any): any {
         path = this.updatePath(path, location, false);
+
+        if (!this.throwIfNotFound) {
+            let result = null;
+            try { result = this.internal.getData(path); } catch (error) { }
+            return result;
+        }
+
         return this.internal.getData(path);
     }
 
@@ -163,7 +190,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
      * @template Path A path leading to a `dictionary`.
      * @param {Path} path The path you'll choose.
      * @param {ContentDef["paths"][Path]["valueType"]} data Some data to set.
-     * @param {string} [key] The key of the value.
+     * @param {string} key The key of the value.
      * @memberof TypedJsonDB
      */
     push<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"], key: string): void;
