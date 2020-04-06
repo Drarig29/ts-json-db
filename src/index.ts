@@ -1,5 +1,4 @@
 import { JsonDB, FindCallback } from "node-json-db";
-import { DataError } from "node-json-db/dist/lib/Errors";
 
 /**
  * The possible entry types for the json database.
@@ -64,8 +63,11 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
             this.internal.push(path, data, true);
         },
         merge: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>): void => {
+            if (!this.internal.exists(path)) 
+                throw new Error("You tried to merge with unexisting data (single). The resulting type wouldn't be defined.");
+
             this.internal.push(path, data, false);
-        },
+        }
     }
 
     array = {
@@ -88,11 +90,12 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 else
                     return this.internal.push(`${path}[${index}]`, data, true);
             },
-            merge: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index?: number): void => {
-                if (index === undefined)
-                    return this.internal.push(`${path}[]`, data, false);
-                else
-                    return this.internal.push(`${path}[${index}]`, data, false);
+            merge: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index: number): void => {
+                const dataPath = `${path}[${index}]`;
+                if (!this.internal.exists(dataPath)) 
+                    throw new Error("You tried to merge with unexisting data (array). The resulting type wouldn't be defined.");
+
+                return this.internal.push(dataPath, data, false);
             }
         }
     }
@@ -112,7 +115,11 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
                 return this.internal.push(`${path}/${key}`, data, true);
             },
             merge: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void => {
-                return this.internal.push(`${path}/${key}`, data, false);
+                const dataPath = `${path}/${key}`;
+                if (!this.internal.exists(dataPath)) 
+                    throw new Error("You tried to merge with unexisting data (dictionary). The resulting type wouldn't be defined.");
+
+                return this.internal.push(dataPath, data, false);
             }
         }
     }
