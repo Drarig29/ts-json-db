@@ -63,7 +63,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
             this.internal.push(path, data, true);
         },
         merge: <Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>): void => {
-            if (!this.internal.exists(path)) 
+            if (!this.internal.exists(path))
                 throw new Error("You tried to merge with unexisting data (single). The resulting type wouldn't be defined.");
 
             this.internal.push(path, data, false);
@@ -92,7 +92,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
             },
             merge: <Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, index: number): void => {
                 const dataPath = `${path}[${index}]`;
-                if (!this.internal.exists(dataPath)) 
+                if (!this.internal.exists(dataPath))
                     throw new Error("You tried to merge with unexisting data (array). The resulting type wouldn't be defined.");
 
                 return this.internal.push(dataPath, data, false);
@@ -116,11 +116,33 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
             },
             merge: <Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void => {
                 const dataPath = `${path}/${key}`;
-                if (!this.internal.exists(dataPath)) 
+                if (!this.internal.exists(dataPath))
                     throw new Error("You tried to merge with unexisting data (dictionary). The resulting type wouldn't be defined.");
 
                 return this.internal.push(dataPath, data, false);
             }
         }
     }
+
+    exists<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path): boolean;
+    exists<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, index: number): boolean;
+    exists<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): boolean;
+    exists(path: any, location?: any): any {
+        if (typeof location === "number") // array
+            return this.internal.exists(`${path}[${location}]`);
+
+        if (typeof location === "string") // dictionary
+            return this.internal.exists(`${path}/${location}`);
+
+        return this.internal.exists(path); // single or root
+    }
+
+    // exists(dataPath: string): boolean;
+    // filter<T>(rootPath: string, callback: FindCallback): T[] | undefined;
+    // find<T>(rootPath: string, callback: FindCallback): T | undefined;
+    // delete(dataPath: string): void;
+    // resetData(data: any): void;
+    // reload(): void;
+    // load(): void;
+    // save(force?: boolean): void;
 }

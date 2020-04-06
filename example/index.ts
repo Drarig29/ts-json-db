@@ -28,3 +28,5 @@ db.dictionary.value.push("/teams", "mydata", "here");
 assert(db.dictionary.value.get("/teams", "here") == "mydata");
 db.dictionary.value.merge("/teams", "merged", "here");
 assert(db.dictionary.value.get("/teams", "here") == "merged");
+
+assert(db.exists("/teams", ""));
