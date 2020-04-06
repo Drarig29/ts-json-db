@@ -54,6 +54,17 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
         this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
     }
 
+    private updatePath(path: any, location: any, arrayEnd: boolean) {
+        if (typeof location === "number")
+            path += "[" + location + "]"; // Array value.
+        else if (typeof location === "string")
+            path += "/" + location; // Dictionary value.
+        else if (arrayEnd)
+            path += "[]"; // Array end.
+
+        return path;
+    }
+
     /**
      * Get a `single` value.
      * @template Path A path leading to a `single` value.
@@ -102,12 +113,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     get<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): ContentDef["paths"][Path]["valueType"];
 
     get(path: any, location?: any): any {
-        if (typeof location === "number")
-            path += "[" + location + "]"; // Array value.
-        else if (typeof location === "string")
-            path += "/" + location; // Dictionary value.
-        // Otherwise, it's the same for a single value, an array or a dictionary.
-
+        path = this.updatePath(path, location, false);
         return this.internal.getData(path);
     }
 
@@ -163,13 +169,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     push<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: ContentDef["paths"][Path]["valueType"], key: string): void;
 
     push(path: any, data: any, location?: any): void {
-        if (typeof location === "number")
-            path += "[" + location + "]"; // Array value.
-        else if (typeof location === "string")
-            path += "/" + location; // Dictionary value.
-        else
-            path += "[]"; // End of the array.
-
+        path = this.updatePath(path, location, true);
         this.internal.push(path, data, true);
     }
 
@@ -206,12 +206,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     merge<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Partial<ContentDef["paths"][Path]["valueType"]>, key: string): void;
 
     merge(path: any, data: any, location?: any): void {
-        if (typeof location === "number")
-            path += "[" + location + "]"; // Array value.
-        else if (typeof location === "string")
-            path += "/" + location; // Dictionary value.
-        // Otherwise, single value.
-
+        path = this.updatePath(path, location, false);
         if (!this.internal.exists(path))
             throw new Error("You tried to merge with unexisting data. The resulting type would be undefined.");
 
@@ -266,12 +261,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     exists<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): boolean;
 
     exists(path: any, location?: any): any {
-        if (typeof location === "number")
-            path += "[" + location + "]"; // Array value.
-        else if (typeof location === "string")
-            path += "/" + location; // Dictionary value.
-        // Otherwise, it's the same for a single value, an array or a dictionary.
-
+        path = this.updatePath(path, location, false);
         return this.internal.exists(path);
     }
 
@@ -318,12 +308,7 @@ export default class TypedJsonDB<ContentDef extends ContentBase> {
     delete<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, key: string): void;
 
     delete(path: any, location?: any): any {
-        if (typeof location === "number")
-            path += "[" + location + "]"; // Array value.
-        else if (typeof location === "string")
-            path += "/" + location; // Dictionary value.
-        // Otherwise, it's the same for a single value, an array or a dictionary.
-
+        path = this.updatePath(path, location, false);
         return this.internal.delete(path);
     }
 
