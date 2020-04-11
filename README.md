@@ -6,7 +6,7 @@ A Node.js database using JSON file as storage. The result of requests are **type
 
 It's a wrapper around [node-json-db](https://github.com/Belphemur/node-json-db) which does the main job about the "database". This package is inspired by [RESTyped](https://github.com/rawrmaan/restyped) and its autocomplete and type checks.
 
-![tst](https://i.imgur.com/kj5F2uS.gif)
+![tst](https://i.imgur.com/q3uLHJW.gif)
 
 ## Installation
 Add `ts-json-db` to your existing Node.js project.
@@ -17,13 +17,7 @@ npm install ts-json-db
 ## Example Usage
 
 ```typescript
-import TypedJsonDB, { ContentBase, ContentInstance, Dictionary } from "ts-json-db";
-
-const contentInstance: ContentInstance = {
-    '/login': "single",
-    '/restaurants': "array",
-    '/teams': "dictionary"
-};
+import TypedJsonDB, { ContentBase, Dictionary } from "ts-json-db";
 
 interface Restaurant {
     name: string
@@ -41,38 +35,23 @@ interface ContentDef extends ContentBase {
     paths: {
         '/login': {
             entryType: "single",
-            baseType: Login,
-            dataType: Login
+            valueType: Login
         },
         '/restaurants': {
             entryType: "array",
-            baseType: Restaurant,
-            dataType: Restaurant[]
+            valueType: Restaurant
         },
         '/teams': {
             entryType: "dictionary",
-            baseType: string,
-            dataType: Dictionary<string>
+            valueType: string
         }
     }
 }
 
-let db = new TypedJsonDB<ContentDef>("config.json", contentInstance);
+let db = new TypedJsonDB<ContentDef>("config.json");
 let result = db.get("/login");
 
 console.log(result);
 ```
 
 You can see in the `example` folder to find usage examples.
-
-## Reason of choices
-
-Mainly, I had to do two things I didn't find a better solution for:
-
-- The need for a root level `paths` (spelled correctly) property in the content definition (`ContentBase`). In fact, without this, VS Code wasn't able to autocomplete the paths for all methods' first parameter. (I don't know why.)
-
-- The need for a type definition `ContentBase` **and** an instance definition `ContentInstance`. The instance definition is needed to be able to check types (in `push()` and `getAt()`) at runtime. I could have created a method for each type (`single`, `array`, `dictionary`), but I didn't want to complexify the syntax too much.
-
-For all entry types (`single`, `array` and `dictionary`), you need to specify `dataType` and `baseType`. Some methods use one and others use the other.
-
-For a `dictionary`, you must use my implementation of generic `Dictionary<T>` (or the same). Otherwise, it won't work.
