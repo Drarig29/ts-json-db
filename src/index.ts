@@ -32,7 +32,7 @@ type PathsOfType<T, U extends EntryType> = { [Key in keyof T]: T[Key] extends { 
 /**
  * Typed wrapper around the JsonDB. Use the internal database field to use non-typed functions.
  */
-export default class TypedJsonDB<ContentDef extends ContentBase> {
+export class TypedJsonDB<ContentDef extends ContentBase> {
 
     /**
      * The encapsulated actual JSON database.

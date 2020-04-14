@@ -1,4 +1,4 @@
-import TypedJsonDB from "../src";
+import { TypedJsonDB } from "../src";
 import { ContentDef, Login, Restaurant } from "./databaseContent";
 import { assert } from "console";
 
