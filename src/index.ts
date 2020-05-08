@@ -176,6 +176,38 @@ export class TypedJsonDB<ContentDef extends ContentBase> {
     }
 
     /**
+    * Set a `single` default value.
+    * @template Path A path leading to a `single` value.
+    * @param {Path} path The path you'll choose.
+    * @param {ContentDef["paths"][Path]["valueType"]} data Some default data to set.
+    * @memberof TypedJsonDB
+    */
+    setDefault<Path extends PathsOfType<ContentDef["paths"], "single">>(path: Path, data: ContentDef["paths"][Path]["valueType"]): void;
+
+    /**
+     * Set a default `array`.
+     * @template Path A path leading to an `array`.
+     * @param {Path} path The path you'll choose.
+     * @param {ContentDef["paths"][Path]["valueType"][]} data An default `array` to set.
+     * @memberof TypedJsonDB
+     */
+    setDefault<Path extends PathsOfType<ContentDef["paths"], "array">>(path: Path, data: ContentDef["paths"][Path]["valueType"][]): void;
+
+    /**
+     * Set a default `dictionary`.
+     * @template Path A path leading to a `dictionary`.
+     * @param {Path} path The path you'll choose.
+     * @param {Dictionary<ContentDef["paths"][Path]["valueType"]>} data A default `dictionary` to set.
+     * @memberof TypedJsonDB
+     */
+    setDefault<Path extends PathsOfType<ContentDef["paths"], "dictionary">>(path: Path, data: Dictionary<ContentDef["paths"][Path]["valueType"]>): void;
+
+    setDefault(path: any, data: any): void {
+        if (!this.internal.exists(path))
+            this.internal.push(path, data);
+    }
+
+    /**
      * Push a value in an `array`.
      * @template Path A path leading to an `array`.
      * @param {Path} path The path you'll choose.
