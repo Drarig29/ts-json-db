@@ -1,4 +1,4 @@
-import { JsonDB, FindCallback } from "node-json-db";
+import { JsonDB } from "node-json-db";
 
 /**
  * The possible entry types for the json database.
@@ -62,7 +62,7 @@ export class TypedJsonDB<ContentDef extends ContentBase> {
      */
     constructor(filename: string, throwIfNotFound: boolean = true, saveOnPush: boolean = true, humanReadable: boolean = false, separator: string = '/') {
         this.internal = new JsonDB(filename, saveOnPush, humanReadable, separator);
-        this.throwIfNotFound = throwIfNotFound || true;
+        this.throwIfNotFound = throwIfNotFound;
     }
 
     /**
